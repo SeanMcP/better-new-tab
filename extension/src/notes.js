@@ -11,7 +11,7 @@ const COLOR_NAMES = { yellow: 'Yellow', green: 'Green', pink: 'Pink' };
 // Colors from the earlier five-color palette.
 const LEGACY_COLORS = { blue: 'green', purple: 'pink' };
 
-export function createNote({ order = Date.now(), color = COLORS[0], id = crypto.randomUUID() } = {}) {
+export function createNote({ order = Date.now(), color = 'green', id = crypto.randomUUID() } = {}) {
   return { id, text: '', color, order, createdAt: Date.now() };
 }
 

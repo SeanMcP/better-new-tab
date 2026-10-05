@@ -10,8 +10,8 @@
   --text: light-dark(#1d1b19, #f1ede7);
   --muted: light-dark(#77716a, #a29b92);
   --faint: light-dark(#b9b3ab, #5d5852);
-  --accent: light-dark(#e5483b, #ff5f52); /* overridden by appearance.js */
-  --accent-text: #ffffff;
+  --accent: light-dark(#2f9e5b, #45c27a); /* overridden by appearance.js */
+  --accent-text: #111111;
   --hover: light-dark(rgba(30, 25, 20, 0.06), rgba(255, 250, 240, 0.07));
   --shadow-color: light-dark(rgba(30, 25, 20, 0.07), rgba(0, 0, 0, 0.3));
   --shadow: 0 1px 2px var(--shadow-color), 0 8px 24px var(--shadow-color);

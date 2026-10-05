@@ -43,7 +43,7 @@ test('defaults follow the system theme', () => {
   const { vars, theme } = resolveAppearance(DEFAULT_SETTINGS);
   assert.equal(theme, '');
   assert.equal(vars['--bg'], 'light-dark(#f4f2ee, #141312)');
-  assert.equal(vars['--accent'], 'light-dark(#e5483b, #ff5f52)');
+  assert.equal(vars['--accent'], 'light-dark(#2f9e5b, #45c27a)');
 });
 
 test('custom background forces a readable theme', () => {
@@ -63,7 +63,7 @@ test('unknown or invalid values fall back to defaults', () => {
   const { vars, theme } = resolveAppearance({ background: 'nope', accent: 'custom', accentCustom: 'oops' });
   assert.equal(theme, '');
   assert.equal(vars['--bg'], 'light-dark(#f4f2ee, #141312)');
-  assert.equal(vars['--accent'], 'light-dark(#e5483b, #ff5f52)');
+  assert.equal(vars['--accent'], 'light-dark(#2f9e5b, #45c27a)');
 });
 
 test('background swatches are distinct, visibly tinted colors', () => {

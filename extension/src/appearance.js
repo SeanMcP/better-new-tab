@@ -32,7 +32,7 @@ export const ACCENTS = [
 export const DEFAULT_SETTINGS = {
   background: 'default',
   backgroundCustom: '#dfe8e4',
-  accent: 'red',
+  accent: 'green',
   accentCustom: '#3a7bd5',
 };
 
@@ -90,7 +90,7 @@ export function resolveAppearance(settings) {
     vars['--accent'] = s.accentCustom;
     vars['--accent-text'] = textOn(s.accentCustom);
   } else {
-    const preset = ACCENTS.find((a) => a.id === s.accent) ?? ACCENTS[0];
+    const preset = ACCENTS.find((a) => a.id === s.accent) ?? ACCENTS.find((a) => a.id === DEFAULT_SETTINGS.accent);
     vars['--accent'] = `light-dark(${preset.light}, ${preset.dark})`;
     vars['--accent-text'] = `light-dark(${textOn(preset.light)}, ${textOn(preset.dark)})`;
   }

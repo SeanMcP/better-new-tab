@@ -7,7 +7,7 @@ const note = (id, color, order, createdAt = order) => ({ id, text: id, color, or
 
 test('three colors', () => {
   assert.deepEqual(COLORS, ['yellow', 'green', 'pink']);
-  assert.equal(createNote().color, 'yellow');
+  assert.equal(createNote().color, 'green');
 });
 
 test('normalizes notes from the free-placement version', () => {
