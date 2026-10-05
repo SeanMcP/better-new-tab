@@ -1,0 +1,858 @@
+:root {
+  /* Every color is light-dark(light, dark). Forcing a theme is just a color-scheme switch. */
+  color-scheme: light dark;
+  --bg: light-dark(#f4f2ee, #141312); /* overridden by appearance.js */
+  --bg-glow: light-dark(color-mix(in oklab, var(--bg), white 55%), color-mix(in oklab, var(--bg), white 5%));
+  /* Surfaces are tinted from the background so cards harmonize with any color. */
+  --surface: light-dark(color-mix(in oklab, var(--bg), white 72%), color-mix(in oklab, var(--bg), white 6%));
+  --surface-strong: light-dark(#ffffff, color-mix(in oklab, var(--bg), white 11%));
+  --border: light-dark(rgba(30, 25, 20, 0.08), rgba(255, 250, 240, 0.08));
+  --text: light-dark(#1d1b19, #f1ede7);
+  --muted: light-dark(#77716a, #a29b92);
+  --faint: light-dark(#b9b3ab, #5d5852);
+  --accent: light-dark(#e5483b, #ff5f52); /* overridden by appearance.js */
+  --accent-text: #ffffff;
+  --hover: light-dark(rgba(30, 25, 20, 0.06), rgba(255, 250, 240, 0.07));
+  --shadow-color: light-dark(rgba(30, 25, 20, 0.07), rgba(0, 0, 0, 0.3));
+  --shadow: 0 1px 2px var(--shadow-color), 0 8px 24px var(--shadow-color);
+  --note-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), 0 6px 16px rgba(0, 0, 0, 0.14);
+  --note-yellow: light-dark(#fff1a6, #f2e08a);
+  --note-pink: light-dark(#ffd3dc, #f0b9c5);
+  --note-green: light-dark(#d3f2c6, #bde3ae);
+  --note-text: #26231f;
+  --radius: 18px;
+}
+
+/* A custom background forces whichever theme keeps text readable on it. */
+:root[data-theme='light'] { color-scheme: light; }
+:root[data-theme='dark'] { color-scheme: dark; }
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: radial-gradient(ellipse at top, var(--bg-glow), var(--bg) 70%) fixed, var(--bg);
+  color: var(--text);
+  font: 15px/1.45 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.icon {
+  width: 1em;
+  height: 1em;
+  flex: none;
+}
+
+/* ---- Layout ------------------------------------------------------------------------------ */
+
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  grid-template-rows: auto auto minmax(340px, 1fr);
+  grid-template-areas:
+    'clock clock'
+    'calendar weather'
+    'notes notes';
+  gap: 20px;
+  max-width: 1120px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 40px 32px 32px;
+}
+
+.clock { grid-area: clock; }
+.calendar { grid-area: calendar; }
+.weather { grid-area: weather; }
+.notes { grid-area: notes; }
+
+@media (max-width: 760px) {
+  .page {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    grid-template-areas: 'clock' 'calendar' 'weather' 'notes';
+    padding: 24px 16px;
+  }
+  .notes { min-height: 420px; }
+}
+
+.card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px 20px 20px;
+  backdrop-filter: blur(20px);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  min-height: 32px;
+}
+
+.card-header h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.icon-button,
+.pill-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  border-radius: 999px;
+  transition: background-color 120ms;
+}
+
+.icon-button {
+  width: 32px;
+  height: 32px;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--muted);
+}
+
+.pill-button {
+  padding: 5px 12px;
+  font-size: 13px;
+  font-weight: 550;
+  background: var(--hover);
+}
+
+.icon-button:hover,
+.pill-button:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.pill-button:hover {
+  background: color-mix(in srgb, var(--hover), var(--text) 6%);
+}
+
+/* ---- Clock ------------------------------------------------------------------------------- */
+
+.clock {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding: 12px 0 8px;
+}
+
+.clock-face {
+  text-align: center;
+}
+
+.clock-time {
+  font-size: clamp(64px, 11vw, 112px);
+  font-weight: 250;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.clock-period {
+  margin-left: 0.15em;
+  font-size: 0.28em;
+  font-weight: 450;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+
+.clock-date {
+  margin-top: 10px;
+  font-size: 17px;
+  color: var(--muted);
+}
+
+.page {
+  position: relative;
+}
+
+.toolbar {
+  position: absolute;
+  top: 40px;
+  right: 32px;
+  z-index: 20;
+  display: flex;
+  gap: 2px;
+}
+
+.toolbar > .icon-button {
+  opacity: 0.45;
+  transition: opacity 150ms, background-color 120ms;
+}
+
+.toolbar > .icon-button .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.toolbar > .icon-button:hover,
+.toolbar > .icon-button:focus-visible,
+.toolbar > .icon-button[aria-expanded='true'] {
+  opacity: 1;
+}
+
+@media (max-width: 760px) {
+  .toolbar {
+    top: 16px;
+    right: 12px;
+  }
+}
+
+.popover {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  z-index: 10;
+  display: grid;
+  gap: 12px;
+  width: 280px;
+  padding: 16px;
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+
+.popover[hidden] {
+  display: none;
+}
+
+.popover label {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.popover label.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+}
+
+.popover select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.popover input[type='checkbox'] {
+  accent-color: var(--accent);
+}
+
+/* ---- Appearance -------------------------------------------------------------------------- */
+
+.appearance-settings {
+  width: 320px;
+}
+
+.appearance-settings fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.appearance-settings legend {
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.appearance-settings .pill-button {
+  justify-self: start;
+}
+
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.popover label.swatch {
+  position: relative;
+  display: block;
+  cursor: pointer;
+}
+
+.swatch input[type='radio'] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.swatch-color {
+  display: block;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--swatch);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+  transition: box-shadow 120ms;
+}
+
+.swatch input:checked + .swatch-color {
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12), 0 0 0 2px var(--surface-strong), 0 0 0 4px var(--text);
+}
+
+.swatch input:focus-visible + .swatch-color {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+/* The custom swatch: a rainbow ring around the chosen color; clicking opens the native picker. */
+.swatch-custom .swatch-color {
+  background:
+    radial-gradient(circle, var(--swatch) 0 7px, transparent 7.5px),
+    conic-gradient(#f44, #fb3, #4c6, #3bd, #66f, #c5e, #f44);
+}
+
+.swatch-custom input[type='color'] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* ---- Calendar ---------------------------------------------------------------------------- */
+
+.calendar-title {
+  color: var(--accent);
+  font-weight: 700 !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.calendar-nav [hidden] {
+  display: none;
+}
+
+.calendar-weekdays,
+.calendar-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  justify-items: center;
+}
+
+.calendar-weekdays {
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--muted);
+}
+
+.calendar-day {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.calendar-day.is-outside {
+  color: var(--faint);
+}
+
+.calendar-day.is-today {
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 700;
+}
+
+/* ---- Weather ----------------------------------------------------------------------------- */
+
+.weather-place {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 70%;
+  padding: 4px 10px 4px 6px;
+  margin-left: -6px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font-weight: 650;
+}
+
+.weather-place:hover {
+  background: var(--hover);
+}
+
+.weather-place .icon {
+  color: var(--muted);
+}
+
+.weather-place-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.unit-toggle {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 999px;
+  background: var(--hover);
+}
+
+.unit-toggle button {
+  padding: 3px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.unit-toggle button[aria-pressed='true'] {
+  background: var(--surface-strong);
+  color: var(--text);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.weather-now {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.weather-now-icon .icon {
+  width: 56px;
+  height: 56px;
+}
+
+.weather-now-temp {
+  font-size: 56px;
+  font-weight: 250;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.weather-now-detail {
+  font-size: 13px;
+}
+
+.weather-now-label {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.icon-sun { color: #f2a516; }
+.icon-moon { color: #9aa6d6; }
+.icon-partly { color: #e0a03a; }
+.icon-cloud { color: var(--muted); }
+.icon-rain { color: #4a90d9; }
+.icon-snow { color: #7fb4e0; }
+.icon-storm { color: #8a6fd1; }
+
+.weather-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.weather-days li {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 8px 2px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+.weather-days li:first-child {
+  background: var(--hover);
+}
+
+.weather-day-name {
+  font-weight: 600;
+}
+
+.weather-day-icon .icon {
+  width: 26px;
+  height: 26px;
+}
+
+.weather-rain {
+  min-height: 1.2em;
+  font-size: 11px;
+  color: #4a90d9;
+}
+
+.weather-day-temps {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.weather-message,
+.weather-loading {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  margin: 8px 0 0;
+}
+
+.weather-message p {
+  margin: 0;
+}
+
+.weather-picker {
+  display: grid;
+  gap: 10px;
+}
+
+.weather-picker input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-strong);
+}
+
+.weather-results {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.weather-results:empty {
+  display: none;
+}
+
+.weather-results button {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+}
+
+.weather-results button:hover,
+.weather-results button:focus-visible {
+  background: var(--hover);
+}
+
+.weather-results .muted {
+  font-size: 13px;
+}
+
+.weather-picker-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.weather-picker-status {
+  margin: 0;
+  min-height: 1.4em;
+  font-size: 13px;
+}
+
+/* ---- Notes ------------------------------------------------------------------------------- */
+
+.notes-header .pill-button .icon {
+  width: 14px;
+  height: 14px;
+}
+
+.notes-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Off: a plain icon. On: a filled chip, so the state is obvious at a glance. */
+.notes-group-toggle[aria-pressed='true'],
+.notes-group-toggle[aria-pressed='true']:hover {
+  background: var(--text);
+  color: var(--surface-strong);
+}
+
+.notes-board {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  align-content: start;
+}
+
+.notes-board[hidden],
+.notes-empty[hidden] {
+  display: none;
+}
+
+.notes-empty {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  min-height: 180px;
+  margin: 0;
+  font-size: 14px;
+}
+
+.notes-group-label {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 -6px;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+
+.notes-group-label::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--note-yellow);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+
+.notes-group-label:not(:first-child) {
+  margin-top: 10px;
+}
+
+.notes-group-label[data-color='green']::before { background: var(--note-green); }
+.notes-group-label[data-color='pink']::before { background: var(--note-pink); }
+
+.note {
+  --note-bg: var(--note-yellow);
+  display: flex;
+  flex-direction: column;
+  height: 180px;
+  background: var(--note-bg);
+  color: var(--note-text);
+  border-radius: 4px 4px 4px 14px;
+  box-shadow: var(--note-shadow);
+}
+
+.note[data-color='green'] { --note-bg: var(--note-green); }
+.note[data-color='pink'] { --note-bg: var(--note-pink); }
+
+/* While dragging: the note stays in the grid as a faded ghost marking the drop slot… */
+.note.is-ghost {
+  opacity: 0.4;
+  box-shadow: none;
+  outline: 2px dashed color-mix(in srgb, var(--note-text), transparent 60%);
+  outline-offset: -2px;
+}
+
+.note.is-ghost .note-bar .note-colors,
+.note.is-ghost .note-bar .note-delete {
+  opacity: 0;
+}
+
+/* …and a lifted copy follows the pointer. */
+.note-drag-preview {
+  position: fixed;
+  z-index: 1000;
+  margin: 0;
+  pointer-events: none;
+  rotate: -2deg;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);
+}
+
+.note-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 26px;
+  padding: 0 4px 0 8px;
+  cursor: grab;
+  touch-action: none;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 4px 4px 0 0;
+}
+
+body:has(.note-drag-preview) {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.note-colors,
+.note-delete {
+  opacity: 0;
+  transition: opacity 120ms;
+}
+
+.note:hover .note-colors,
+.note:hover .note-delete,
+.note:focus-within .note-colors,
+.note:focus-within .note-delete {
+  opacity: 1;
+}
+
+.note-colors {
+  display: flex;
+  gap: 5px;
+}
+
+.note-color {
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  background: var(--note-yellow);
+}
+
+.note-color[data-color='green'] { background: var(--note-green); }
+.note-color[data-color='pink'] { background: var(--note-pink); }
+
+.note[data-color='yellow'] .note-color[data-color='yellow'],
+.note[data-color='green'] .note-color[data-color='green'],
+.note[data-color='pink'] .note-color[data-color='pink'] {
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35);
+}
+
+.note-delete {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.note-delete:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.note-text {
+  flex: 1;
+  width: 100%;
+  padding: 8px 12px 12px;
+  border: 0;
+  outline: 0;
+  resize: none;
+  background: transparent;
+  color: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.note-text::placeholder {
+  color: rgba(0, 0, 0, 0.35);
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 16px;
+  translate: -50% 0;
+  background: var(--text);
+  color: var(--bg);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  font-size: 14px;
+}
+
+.toast[hidden] {
+  display: none;
+}
+
+.toast .pill-button {
+  background: color-mix(in srgb, var(--bg), transparent 80%);
+  color: inherit;
+}
+
+@media (max-width: 560px) {
+  .weather-days li {
+    padding: 6px 0;
+    font-size: 12px;
+  }
+  .weather-day-temps {
+    display: grid;
+    justify-items: center;
+  }
+  .weather-now-temp {
+    font-size: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}

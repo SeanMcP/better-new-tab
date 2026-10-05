@@ -1,0 +1,10 @@
+{
+  "name": "better-new-tab",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Chrome new-tab extension: clock, browsable calendar, weather and local sticky notes.",
+  "scripts": {
+    "test": "node --test 'tests/*.test.js'"
+  }
+}
