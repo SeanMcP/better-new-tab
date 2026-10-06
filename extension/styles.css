@@ -423,6 +423,23 @@ button {
 
 /* ---- Weather ----------------------------------------------------------------------------- */
 
+/* Fill the row height set by the calendar: the current conditions absorb any extra space. */
+.weather {
+  display: flex;
+  flex-direction: column;
+  container-type: inline-size;
+}
+
+.weather-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.weather-body > * {
+  flex: none;
+}
+
 .weather-place {
   display: inline-flex;
   align-items: center;
@@ -472,8 +489,9 @@ button {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
-.weather-now {
+.weather-body > .weather-now {
   display: flex;
+  flex: 1;
   align-items: center;
   gap: 16px;
   margin-bottom: 18px;
@@ -548,6 +566,16 @@ button {
 .weather-day-temps {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+/* Too narrow for a week: show five days rather than squishing seven. */
+@container (max-width: 460px) {
+  .weather-days {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  .weather-days li:nth-child(n + 6) {
+    display: none;
+  }
 }
 
 .weather-message,
